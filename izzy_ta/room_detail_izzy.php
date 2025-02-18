@@ -1,98 +1,117 @@
-<?php
-require('admin/inc/koneksi_db_izzy.php');
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="htttps://unpkg.com/swiper07/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
     <?php require('inc/links_izzy.php'); ?>
+    <title>Room Details - Izzy Hotel</title>
 </head>
-
 <?php
+require_once('admin/inc/koneksi_db_izzy.php');
+require_once('inc/header_izzy.php');
+
+$IzzyUserLoggedIn = isset($_SESSION['user_id_izzy']);
+
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     die("Room ID is required.");
 }
 
 $id_room_izzy = intval($_GET['id']);
-$query = "SELECT f.feature_name_izzy, fc.facility_name_izzy 
-          FROM rooms_izzy r
-          JOIN features_izzy f ON r.id_feature_izzy = f.id_feature_izzy
-          JOIN facilities_izzy fc ON r.id_facility_izzy = fc.id_facility_izzy
-          WHERE r.id_room_izzy = ?";
 
-$stmt = $con->prepare($query);
+$IzzyQuery = "SELECT r.id_room_izzy, r.name_izzy, r.guest_capacity_izzy, 
+              r.price_izzy, r.room_status_izzy, t.type_izzy, f.add_name_izzy 
+              FROM rooms_izzy r
+              INNER JOIN room_type_izzy t ON r.id_type_izzy = t.id_type_izzy
+              INNER JOIN add_facilities_izzy f ON r.id_add_izzy = f.id_add_izzy
+              WHERE r.id_room_izzy = ?";
+
+$stmt = $con->prepare($IzzyQuery);
 $stmt->bind_param("i", $id_room_izzy);
 $stmt->execute();
 $result = $stmt->get_result();
 $room = $result->fetch_assoc();
 
 if (!$room) {
-    die("Room not found.");
+    die("<h3 class='text-center text-danger'>Room Not Found.</h3>");
 }
+
 ?>
 
+<body class="bg-light">
 
-<body>
-    <?php require('inc/header_izzy.php'); ?>
+    <div class="my-5 px-4">
+        <h2 class="fw-bold h-font text-center">ROOM DETAILS</h2>
+        <div class="h-line bg-dark"></div>
+    </div>
 
     <div class="container">
-        <dic class="row">
+        <div class="row">
             <div class="card mb-4 border-0 shadow">
                 <div class="row g-0 p-3 align-items-center">
                     <div class="col-md-5 mb-lg-0 mb-md-0 mb-3">
-                        <img src="images/rooms/1.jpg" class="img-fluid rounded-start" alt="...">
+                        <img src="images/rooms/<?php echo isset($room['image_field']) ? $room['image_field'] : '1.jpg'; ?>"
+                            class="img-fluid rounded-start" alt="Room Image">
                     </div>
                     <div class="col-md-5 px-lg-3 px-md-3 px-0">
-                        <h5>Room 1</h5>
+                        <h5><?php echo $room['name_izzy']; ?></h5>
                         <div class="features mb-3">
-                            <h6 class="mb-1">Features</h6>
+                            <h6 class="mb-1">Room Type</h6>
                             <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                                2 Rooms
-                            </span>
-                            <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                                1 Bathroom
-                            </span>
-                            <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                                2 Sofa
+                                <?php echo $room['type_izzy']; ?>
                             </span>
                         </div>
-                        <div class="faciilities mb-3">
+                        <div class="facilities mb-3">
                             <h6 class="mb-1">Facilities</h6>
                             <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                                Television
-                            </span>
-                            <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                                AC
-                            </span>
-                            <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                                Room Heater
+                                <?php echo $room['add_name_izzy']; ?>
                             </span>
                         </div>
-                        <div class="guest">
+                        <div class="guest mb-3">
                             <h6 class="mb-1">Guest</h6>
                             <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                                5 Adults
+                                <?php echo $room['guest_capacity_izzy']; ?> Guests
                             </span>
+                        </div>
+                        <div class="status">
+                            <h6 class="mb-1">Status</h6>
                             <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                                2 Children
+                                <?php echo $room['room_status_izzy']; ?>
                             </span>
                         </div>
                     </div>
                     <div class="col-md-2 mt-lg-0 mt-md-0 mt-4 text-center">
-                        <h6 class="mb-4"> $100 per night</h6>
-                        <a href="booking_izzy.php" class="btn btn-sm w-100 text-white custom-bg shadow-none mb-2">Book Now</a>
+                        <h6 class="mb-4">$<?php echo $room['price_izzy']; ?> per night</h6>
+                        <?php if(isset($_SESSION['user_id_izzy'])): ?>
+                        <a href="booking_izzy.php?id=<?php echo $room['id_room_izzy']; ?>"
+                            class="btn btn-sm w-100 text-white custom-bg shadow-none mb-2">Book Now</a>
+                        <?php else: ?>
+                        <button type="button"
+                            class="btn btn-sm w-100 text-white custom-bg shadow-none mb-2 book-now-btn"
+                            data-room-id="<?php echo $room['id_room_izzy']; ?>">Book Now</button>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
-        </dic>
-
+        </div>
     </div>
 
+    <!-- Script: Jika user belum login, tombol Book Now akan memunculkan modal LOGIN -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var bookNowButtons = document.querySelectorAll('.book-now-btn');
+        bookNowButtons.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var loginModal = new bootstrap.Modal(document.getElementById('login'));
+                loginModal.show();
+            });
+        });
+    });
+    </script>
+
     <?php require('inc/footer_izzy.php'); ?>
+
 </body>
 
 </html>

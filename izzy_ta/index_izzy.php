@@ -98,60 +98,79 @@
     <h2 class="mt-5 pt-4 mb-4 text-center fw-bold h-font">OUR ROOMS</h2>
     <div class="container">
         <div class="row">
-            <div class=" col-lg-4 col-md-6 my-3">
-                <div class="card border-0 shadow" style="max-width: 350px; margin: auto;">
-                    <img src="images/rooms/1.jpg" class="card-img-top">
-                    <div class="card-body">
-                        <h5>Room 1</h5>
-                        <h6 class="mb-4"> $100 per night</h6>
-                        <div class="features mb-4">
-                            <h6 class="mb-1">Features</h6>
-                            <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                                2 Rooms
-                            </span>
-                            <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                                1 Bathroom
-                            </span>
-                            <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                                2 Sofa
-                            </span>
-                        </div>
-                        <div class="faciilities mb-4">
-                            <h6 class="mb-1">Facilities</h6>
-                            <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                                Television
-                            </span>
-                            <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                                AC
-                            </span>
-                            <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                                Room Heater
-                            </span>
-                        </div>
-                        <div class="guest mb-4">
-                            <h6 class="mb-1">Guest</h6>
-                            <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                                5 Adults
-                            </span>
-                            <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                                2 Children
-                            </span>
-                        </div>
-                        <div class="rating mb-4">
-                            <h6 class="mb-1">Rating</h6>
-                            <span class="badge rounded-pill bg-light">
-                                <i class="bi bi-star-fill text-warning"></i>
-                                <i class="bi bi-star-fill text-warning"></i>
-                                <i class="bi bi-star-fill text-warning"></i>
-                                <i class="bi bi-star-fill text-warning"></i>
-                            </span>
-                        </div>
-                        <div class="d-flex justify-content-evenly mb-2">
-                            <a href="booking_izzy.php" class="btn btn-sm text-white custom-bg shadow-none">Book Now</a>
-                            <a href="room_detail_izzy.php" class="btn btn-sm btn-outline-dark shadow-none">More Details</a>
+            <?php
+            $IzzyUserLoggedIn = isset($_SESSION['user_id_izzy']);
+            $IzzyQuery = "SELECT 
+                r.id_room_izzy, 
+                r.name_izzy, 
+                r.guest_capacity_izzy, 
+                r.price_izzy, 
+                r.room_status_izzy, 
+                t.type_izzy, 
+                f.add_name_izzy
+            FROM rooms_izzy r
+            INNER JOIN room_type_izzy t ON r.id_type_izzy = t.id_type_izzy
+            INNER JOIN add_facilities_izzy f ON r.id_add_izzy = f.id_add_izzy
+            ";
+            $IzzyResult = mysqli_query($con, $IzzyQuery);
+            if (mysqli_num_rows($IzzyResult) == 0) {
+                echo "<p class='text-center'>Room Not Found.</p>";
+            } else {
+                while ($IzzyRow = mysqli_fetch_assoc($IzzyResult)) { ?>
+                    <div class=" col-lg-4 col-md-6 my-3">
+                        <div class="card border-0 shadow" style="max-width: 350px; margin: auto;">
+                            <img src="images/rooms/1.jpg" class="card-img-top">
+                            <div class="card-body">
+                                <h5><?php echo $IzzyRow['name_izzy']; ?></h5>
+                                <h6 class="mb-4">$<?php echo $IzzyRow['price_izzy']; ?> per night</h6>
+                                <div class="features mb-4">
+                                    <h6 class="mb-1">Room Type</h6>
+                                    <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
+                                        <?php echo $IzzyRow['type_izzy']; ?>
+                                    </span>
+                                </div>
+                                <div class="faciilities mb-4">
+                                    <h6 class="mb-1">Facilities</h6>
+                                    <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
+                                        <?php echo $IzzyRow['add_name_izzy']; ?>
+                                    </span>
+                                </div>
+                                <div class="guest mb-4">
+                                    <h6 class="mb-1">Guest</h6>
+                                    <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
+                                        <?php echo $IzzyRow['guest_capacity_izzy']; ?> Guests
+                                    </span>
+                                </div>
+                                <div class="rating mb-4">
+                                    <h6 class="mb-1">Rating</h6>
+                                    <span class="badge rounded-pill bg-light">
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-evenly mb-2">
+                                    <?php if (isset($_SESSION['user_id_izzy'])): ?>
+                                        <a href="booking_izzy.php?id=<?php echo $IzzyRow['id_room_izzy']; ?>"
+                                            class="btn btn-sm text-white custom-bg shadow-none ">Book Now</a>
+                                    <?php else: ?>
+                                        <button type="button"
+                                            class="btn btn-sm text-white custom-bg shadow-none book-now-btn"
+                                            data-room-id="<?php echo $IzzyRow['id_room_izzy']; ?>">Book Now</button>
+                                    <?php endif; ?>
+                                    <a href="room_detail_izzy.php?id=<?php echo $IzzyRow['id_room_izzy']; ?>"
+                                        class="btn btn-sm btn-outline-dark shadow-none">More Details</a>
+                                </div>
+
+                            </div>
                         </div>
                     </div>
-                </div>
+            <?php }
+            } ?>
+            <div class="col-lg-12 text-center mt-5">
+                <a href="rooms_izzy.php" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none">More
+                    Facilities>>></a>
             </div>
         </div>
     </div>
@@ -297,6 +316,16 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var bookNowButtons = document.querySelectorAll('.book-now-btn');
+            bookNowButtons.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var loginModal = new bootstrap.Modal(document.getElementById('login'));
+                    loginModal.show();
+                });
+            });
+        });
+
         var swiper = new Swiper(".swiper-container", {
             spaceBetween: 30,
             effect: "fade",
