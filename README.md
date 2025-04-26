@@ -1,1 +1,1 @@
-# izzy_ta_hotel_booking
+# izzy_booking_hotel
